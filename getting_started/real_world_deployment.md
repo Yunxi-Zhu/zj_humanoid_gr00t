@@ -410,7 +410,14 @@ When direct optimization is insufficient, use one or more of the following:
 
 **Recommended strategy**: `Asynchronous Inference + RTC` is usually the most effective.
 
-> **RTC status (experimental):** Asynchronous inference is supported today. RTC is currently only a low-level model primitive: `action_head.get_action(..., options={"rtc_overlap_steps": ..., "rtc_frozen_steps": ..., "rtc_ramp_rate": ...})` with the previous action fed back in (`gr00t/model/gr00t_n1d7/gr00t_n1d7.py`). It is **not wired into `Gr00tPolicy` or the server-client path** (there `options` is currently unused), and it has no tests or ready-made example — so the RTC steps below require manual integration.
+> **RTC status (experimental):** `Gr00tPolicy` accepts an `rtc_previous_action`
+> chunk together with `rtc_overlap_steps`, `rtc_frozen_steps`, and
+> `rtc_ramp_rate` through the existing server-client `options` field. The policy
+> normalizes the previous physical action chunk and forwards it to the low-level
+> inpainting primitive in `gr00t/model/gr00t_n1d7/gr00t_n1d7.py`. This path is
+> currently restricted to `ABSOLUTE` action configurations; the client is still
+> responsible for asynchronous scheduling and skipping overlap steps already
+> executed while inference was running.
 
 #### Real-Time Chunking (RTC) Details
 
@@ -460,5 +467,4 @@ loop:
             actions = future.get()                 # swap in next chunk
             break                                  # discard frozen tail
 ```
-
 

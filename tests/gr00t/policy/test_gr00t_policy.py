@@ -22,7 +22,13 @@ Uses mocked model and processor to avoid downloading checkpoints.
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from gr00t.data.types import ModalityConfig
+from gr00t.data.types import (
+    ActionConfig,
+    ActionFormat,
+    ActionRepresentation,
+    ActionType,
+    ModalityConfig,
+)
 import numpy as np
 import pytest
 import torch
@@ -168,6 +174,67 @@ class TestGr00tPolicyGetAction:
         action, info = policy.get_action(obs)
         assert isinstance(action, dict)
         assert isinstance(info, dict)
+
+    def test_rtc_previous_chunk_is_processed_and_forwarded(self, policy):
+        action_config = policy.modality_configs["action"]
+        action_config.action_configs = [
+            ActionConfig(
+                rep=ActionRepresentation.ABSOLUTE,
+                type=ActionType.NON_EEF,
+                format=ActionFormat.DEFAULT,
+            )
+            for _ in ACTION_KEYS
+        ]
+        previous_action = {
+            key: np.zeros((1, 16, 1), dtype=np.float32) for key in ACTION_KEYS
+        }
+        processed_steps = []
+        policy.processor.side_effect = lambda messages: processed_steps.append(
+            messages[0]["content"]
+        ) or {}
+        policy.collate_fn = MagicMock(return_value={})
+
+        policy.get_action(
+            _make_observation(),
+            options={
+                "rtc_previous_action": previous_action,
+                "rtc_overlap_steps": 8,
+                "rtc_frozen_steps": 4,
+                "rtc_ramp_rate": 4.0,
+            },
+        )
+
+        assert set(processed_steps[0].actions) == set(ACTION_KEYS)
+        assert processed_steps[0].actions[ACTION_KEYS[0]].shape == (16, 1)
+        assert policy.model.get_action.call_args.kwargs["options"] == {
+            "action_horizon": 16,
+            "rtc_overlap_steps": 8,
+            "rtc_frozen_steps": 4,
+            "rtc_ramp_rate": 4.0,
+        }
+
+    def test_rtc_rejects_invalid_overlap(self, policy):
+        policy.modality_configs["action"].action_configs = [
+            ActionConfig(
+                rep=ActionRepresentation.ABSOLUTE,
+                type=ActionType.NON_EEF,
+                format=ActionFormat.DEFAULT,
+            )
+            for _ in ACTION_KEYS
+        ]
+        previous_action = {
+            key: np.zeros((1, 16, 1), dtype=np.float32) for key in ACTION_KEYS
+        }
+        with pytest.raises(ValueError, match="rtc_overlap_steps"):
+            policy.get_action(
+                _make_observation(),
+                options={
+                    "rtc_previous_action": previous_action,
+                    "rtc_overlap_steps": 17,
+                    "rtc_frozen_steps": 4,
+                    "rtc_ramp_rate": 4.0,
+                },
+            )
 
 
 class _NumpyLanguageSimPolicy:
