@@ -1,0 +1,79 @@
+{
+    "state": {
+        "left_tcp": {
+            "start": 0,
+            "end": 7,
+            "original_key": "observation.state.left_tcp"
+        },
+        "left_pinch_raw": {
+            "start": 0,
+            "end": 6,
+            "original_key": "observation.state.left_pinch_raw"
+        },
+        "left_finger_pressure": {
+            "start": 0,
+            "end": 6,
+            "original_key": "observation.state.left_finger_pressure"
+        },
+        "left_wrist_force": {
+            "start": 0,
+            "end": 3,
+            "original_key": "observation.state.left_wrist_force"
+        },
+        "right_tcp": {
+            "start": 0,
+            "end": 7,
+            "original_key": "observation.state.right_tcp"
+        },
+        "right_pinch_raw": {
+            "start": 0,
+            "end": 6,
+            "original_key": "observation.state.right_pinch_raw"
+        },
+        "right_finger_pressure": {
+            "start": 0,
+            "end": 6,
+            "original_key": "observation.state.right_finger_pressure"
+        },
+        "right_wrist_force": {
+            "start": 0,
+            "end": 3,
+            "original_key": "observation.state.right_wrist_force"
+        }
+    },
+    "action": {
+        "left_delta_tcp": {
+            "start": 0,
+            "end": 6,
+            "original_key": "action.left_delta_tcp"
+        },
+        "left_pinch_raw": {
+            "start": 0,
+            "end": 6,
+            "original_key": "action.left_pinch_raw"
+        },
+        "right_delta_tcp": {
+            "start": 0,
+            "end": 6,
+            "original_key": "action.right_delta_tcp"
+        },
+        "right_pinch_raw": {
+            "start": 0,
+            "end": 6,
+            "original_key": "action.right_pinch_raw"
+        }
+    },
+    "video": {
+        "chest": {
+            "original_key": "observation.images.chest"
+        },
+        "left": {
+            "original_key": "observation.images.left"
+        }
+    },
+    "annotation": {
+        "human.task_description": {
+            "original_key": "task_index"
+        }
+    }
+}
